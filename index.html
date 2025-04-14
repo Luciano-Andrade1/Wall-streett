@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-bg: #121212;
+            --secondary-bg: #1E1E1E;
+            --accent-color: #FFD700;
+            --accent-dark: #FFA500;
+            --text-primary: #FFFFFF;
+            --text-secondary: #CCCCCC;
+            --card-bg: #252525;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Layout Principal */
+        .app-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background-color: var(--secondary-bg);
+            padding: 2rem 1rem;
+            border-right: 1px solid rgba(255, 215, 0, 0.1);
+            position: relative;
+            z-index: 10;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-left: 1rem;
+        }
+
+        .logo i {
+            color: var(--accent-color);
+            font-size: 1.8rem;
+            margin-right: 0.8rem;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--accent-color), var(--accent-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+            transition: var(--transition);
+        }
+
+        .nav-item:hover::before {
+            left: 100%;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+            border-radius: 8px;
+        }
+
+        .nav-link:hover {
+            color: var(--accent-color);
+            background-color: rgba(255, 215, 0, 0.05);
+        }
+
+        .nav-link.active {
+            color: var(--accent-color);
+            background-color: rgba(255, 215, 0, 0.1);
+            font-weight: 600;
+        }
+
+        .nav-link i {
+            margin-right: 0.8rem;
+            font-size: 1.1rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 2rem;
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--accent-color);
+        }
+
+        .user-name {
+            font-weight: 600;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.6rem 1.2rem;
+            background-color: var(--secondary-bg);
+            color: var(--text-primary);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .back-button:hover {
+            background-color: var(--accent-color);
+            color: var(--primary-bg);
+            transform: translateX(-3px);
+        }
+
+        .back-button i {
+            margin-right: 0.5rem;
+        }
+
+        /* Cards */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border: 1px solid rgba(255, 215, 0, 0.1);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(255, 215, 0, 0.1);
+            color: var(--accent-color);
+            font-size: 1.2rem;
+        }
+
+        .card-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--accent-color);
+        }
+
+        .card-change {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .card-change.positive {
+            color: #4CAF50;
+        }
+
+        .card-change.negative {
+            color: #F44336;
+        }
+
+        .card-change i {
+            margin-right: 0.3rem;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 215, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .chart-timeframe {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .timeframe-btn {
+            padding: 0.5rem 1rem;
+            background-color: var(--secondary-bg);
+            border: none;
+            border-radius: 6px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.8rem;
+        }
+
+        .timeframe-btn.active {
+            background-color: var(--accent-color);
+            color: var(--primary-bg);
+            font-weight: 600;
+        }
+
+        .timeframe-btn:hover:not(.active) {
+            background-color: rgba(255, 215, 0, 0.1);
+            color: var(--accent-color);
+        }
+
+        .chart-wrapper {
+            width: 100%;
+            height: 400px;
+            position: relative;
+        }
+
+        /* Recent Activity */
+        .activity-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 215, 0, 0.1);
+        }
+
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .activity-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .activity-list {
+            list-style: none;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(255, 215, 0, 0.1);
+            color: var(--accent-color);
+            margin-right: 1rem;
+            font-size: 1rem;
+        }
+
+        .activity-details {
+            flex: 1;
+        }
+
+        .activity-name {
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+        }
+
+        .activity-description {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .activity-value {
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+
+        /* Responsividade */
+        @media (max-width: 992px) {
+            .app-container {
+                grid-template-columns: 80px 1fr;
+            }
+
+            .logo h1, .nav-link span, .user-name {
+                display: none;
+            }
+
+            .logo {
+                justify-content: center;
+                padding-left: 0;
+            }
+
+            .nav-link {
+                justify-content: center;
+                padding: 0.8rem 0;
+            }
+
+            .nav-link i {
+                margin-right: 0;
+                font-size: 1.3rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .user-profile {
+                align-self: flex-end;
+            }
+        }
+
+        /* Página Home */
+        .home-hero {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 215, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .home-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.05) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent-color);
+            font-weight: 800;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.8rem 2rem;
+            background-color: var(--accent-color);
+            color: var(--primary-bg);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+            background-color: var(--accent-dark);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .feature-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border: 1px solid rgba(255, 215, 0, 0.1);
+            text-align: center;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            color: var(--accent-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-title {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .feature-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Efeitos Especiais */
+        .glow {
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(255, 215, 0, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 215, 0, 0);
+            }
+        }
+
+        /* Transições entre páginas */
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-chart-line"></i>
+                <h1>GoldFinance</h1>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active" data-page="dashboard">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="home">
+                        <i class="fas fa-globe"></i>
+                        <span>Home</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-wallet"></i>
+                        <span>Carteira</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span>Transações</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-cog"></i>
+                        <span>Configurações</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Page -->
+            <div class="page active" id="dashboard-page">
+                <div class="header">
+                    <h1 class="page-title">Dashboard Financeiro</h1>
+                    <div class="user-profile">
+                        <span class="user-name">Bruno Mathias</span>
+                        <img src="https://media-gig4-2.cdn.whatsapp.net/v/t61.24694-24/473404298_1368896531215086_4955395390220802749_n.jpg?ccb=11-4&oh=01_Q5Aa1QHjxqohBJ6nuGkLSaMHIBq-erdnETo3vg1A_0wl65EoVQ&oe=680A7376&_nc_sid=5e03e0&_nc_cat=100" alt="User" class="user-avatar">
+                    </div>
+                </div>
+
+                <a href="#" class="back-button" id="back-button">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar
+                </a>
+
+                <div class="cards-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Valor da Carteira</h3>
+                            <div class="card-icon">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                        </div>
+                        <h2 class="card-value">R$ 2,589.34</h2>
+                        <div class="card-change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>5.2% (último mês)</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Rendimento Anual</h3>
+                            <div class="card-icon">
+                                <i class="fas fa-percentage"></i>
+                            </div>
+                        </div>
+                        <h2 class="card-value">21.8%</h2>
+                        <div class="card-change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>2.1% (último trimestre)</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Ações em Carteira</h3>
+                            <div class="card-icon">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                        </div>
+                        <h2 class="card-value">18</h2>
+                        <div class="card-change negative">
+                            <i class="fas fa-arrow-down"></i>
+                            <span>1.4% (último mês)</span>
+                        </div>
+                    </div>
+
+                    <div class="card pulse">
+                        <div class="card-header">
+                            <h3 class="card-title">Próximo Dividendo</h3>
+                            <div class="card-icon">
+                                <i class="fas fa-hand-holding-usd"></i>
+                            </div>
+                        </div>
+                        <h2 class="card-value">R$ 1,245.00</h2>
+                        <div class="card-change">
+                            <i class="fas fa-calendar-day"></i>
+                            <span>15 dias até o pagamento</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Desempenho da Carteira (6 meses)</h3>
+                        <div class="chart-timeframe">
+                            <button class="timeframe-btn">1M</button>
+                            <button class="timeframe-btn active">6M</button>
+                            <button class="timeframe-btn">1A</button>
+                            <button class="timeframe-btn">Tudo</button>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="stockChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="activity-container">
+                    <div class="activity-header">
+                        <h3 class="activity-title">Atividades Recentes</h3>
+                        <button class="timeframe-btn">Ver Tudo</button>
+                    </div>
+                    <ul class="activity-list">
+                        <li class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-arrow-up"></i>
+                            </div>
+                            <div class="activity-details">
+                                <h4 class="activity-name">Compra de PETR4</h4>
+                                <p class="activity-description">10 ações @ R$ 32.45</p>
+                            </div>
+                            <div class="activity-value">-R$ 324.50</div>
+                        </li>
+                        <li class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-arrow-down"></i>
+                            </div>
+                            <div class="activity-details">
+                                <h4 class="activity-name">Venda de VALE3</h4>
+                                <p class="activity-description">15 ações @ R$ 68.90</p>
+                            </div>
+                            <div class="activity-value">+R$ 1,033.50</div>
+                        </li>
+                        <li class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-hand-holding-usd"></i>
+                            </div>
+                            <div class="activity-details">
+                                <h4 class="activity-name">Dividendo ITSA4</h4>
+                                <p class="activity-description">25 ações @ R$ 1.20/ação</p>
+                            </div>
+                            <div class="activity-value">+R$ 30.00</div>
+                        </li>
+                        <li class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-arrow-up"></i>
+                            </div>
+                            <div class="activity-details">
+                                <h4 class="activity-name">Compra de BBDC4</h4>
+                                <p class="activity-description">30 ações @ R$ 16.75</p>
+                            </div>
+                            <div class="activity-value">-R$ 502.50</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Home Page -->
+            <div class="page" id="home-page">
+                <div class="header">
+                    <h1 class="page-title">GoldFinance</h1>
+                    <div class="user-profile">
+                        <span class="user-name">Luciano Andrade</span>
+                        <img src="https://media-gig4-1.cdn.whatsapp.net/v/t61.24694-24/484385489_1039661521548578_2336113316087105590_n.jpg?ccb=11-4&oh=01_Q5Aa1QGZD6nZvIOMwWDToeQSRLz5NLjaDxRt8J7xEEDLtJ88zA&oe=680A78D8&_nc_sid=5e03e0&_nc_cat=102" alt="User" class="user-avatar">
+                    </div>
+                </div>
+
+                <a href="#" class="back-button" id="back-button-home">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar
+                </a>
+
+                <section class="home-hero">
+                    <h1 class="hero-title glow">Controle seu futuro financeiro</h1>
+                    <p class="hero-subtitle">Acompanhe seus investimentos em tempo real, tome decisões inteligentes e maximize seus retornos com nossa plataforma avançada de análise de ações.</p>
+                    <a href="#" class="cta-button" data-page="dashboard">
+                        <i class="fas fa-chart-line" style="margin-right: 0.5rem;"></i>
+                        Acessar Dashboard
+                    </a>
+                </section>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 class="feature-title">Análise em Tempo Real</h3>
+                        <p class="feature-description">Acompanhe o desempenho de suas ações com gráficos interativos e dados atualizados em tempo real diretamente da bolsa de valores.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <h3 class="feature-title">Alertas Inteligentes</h3>
+                        <p class="feature-description">Receba notificações quando suas ações atingirem valores pré-definidos ou quando oportunidades de investimento surgirem.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <h3 class="feature-title">Recomendações Personalizadas</h3>
+                        <p class="feature-description">Nossa IA analisa seu perfil e sugere investimentos alinhados com seus objetivos e tolerância a risco.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3 class="feature-title">Segurança Máxima</h3>
+                        <p class="feature-description">Seus dados e investimentos são protegidos com criptografia de nível bancário e autenticação multifator.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h3 class="feature-title">Acesso Multiplataforma</h3>
+                        <p class="feature-description">Acesse sua carteira de investimentos de qualquer dispositivo, a qualquer momento, com nossa plataforma responsiva.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                        </div>
+                        <h3 class="feature-title">Relatórios Detalhados</h3>
+                        <p class="feature-description">Gere relatórios completos para análise de desempenho, declaração de imposto de renda e planejamento tributário.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Navegação entre páginas
+        document.querySelectorAll('.nav-link, .cta-button').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetPage = this.getAttribute('data-page');
+                
+                if (targetPage) {
+                    // Esconde todas as páginas
+                    document.querySelectorAll('.page').forEach(page => {
+                        page.classList.remove('active');
+                    });
+                    
+                    // Mostra a página alvo
+                    document.getElementById(`${targetPage}-page`).classList.add('active');
+                    
+                    // Atualiza o menu ativo
+                    document.querySelectorAll('.nav-link').forEach(navLink => {
+                        navLink.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                }
+            });
+        });
+
+        // Configuração do gráfico de ações
+        const ctx = document.getElementById('stockChart').getContext('2d');
+        const stockChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+                datasets: [
+                    {
+                        label: 'PETR4',
+                        data: [28.5, 29.2, 30.1, 31.5, 32.0, 32.4],
+                        borderColor: '#FFD700',
+                        backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: 'VALE3',
+                        data: [62.3, 65.1, 67.8, 68.5, 69.2, 68.9],
+                        borderColor: '#FFFFFF',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: 'BBDC4',
+                        data: [15.2, 15.8, 16.1, 16.5, 16.2, 16.7],
+                        borderColor: '#FFA500',
+                        backgroundColor: 'rgba(255, 165, 0, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#FFFFFF',
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: '#1E1E1E',
+                        titleColor: '#FFD700',
+                        bodyColor: '#FFFFFF',
+                        borderColor: '#FFD700',
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#CCCCCC'
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#CCCCCC',
+                            callback: function(value) {
+                                return 'R$ ' + value;
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                }
+            }
+        });
+
+        // Botão de voltar
+        document.getElementById('back-button').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById('home-page').classList.add('active');
+            
+            // Atualiza o menu ativo
+            document.querySelectorAll('.nav-link').forEach(navLink => {
+                navLink.classList.remove('active');
+                if (navLink.getAttribute('data-page') === 'home') {
+                    navLink.classList.add('active');
+                }
+            });
+        });
+
+        document.getElementById('back-button-home').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById('dashboard-page').classList.add('active');
+            
+            // Atualiza o menu ativo
+            document.querySelectorAll('.nav-link').forEach(navLink => {
+                navLink.classList.remove('active');
+                if (navLink.getAttribute('data-page') === 'dashboard') {
+                    navLink.classList.add('active');
+                }
+            });
+        });
+
+        // Botões de timeframe do gráfico
+        document.querySelectorAll('.timeframe-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Aqui você poderia atualizar os dados do gráfico conforme o período selecionado
+                // Por simplicidade, estamos apenas mudando a aparência do botão
+            });
+        });
+    </script>
+</body>
+</html>
